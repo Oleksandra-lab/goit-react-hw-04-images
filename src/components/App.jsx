@@ -7,6 +7,7 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
+import { Alert } from './Alert/Alert.styled';
 
  export function App () {
   
@@ -30,34 +31,13 @@ import { Modal } from './Modal/Modal';
                 setImages(prevImages => [...prevImages, ...hits]);
                 setTotalResults(totalHits);              
             } catch (error) {
-              setError(error);
+              setError(error.message);
             }
           };
 
           fetchAllImages();
     },[query, page])
   
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   const { query, page } = this.state;
-  //   if (prevState.query !== query || prevState.page !== page) {
-  //     this.fetchAllImages();
-  //   }
-  // }
-
-  // fetchAllImages = async () => {
-  //   const { query, page } = this.state;
-  //   try {
-  //     const { hits, totalHits } = await getImages(query, page);
-  //     this.setState(prevState => ({
-  //       images: [...prevState.images, ...hits],
-  //       totalResults: totalHits,
-  //     }));
-  //   } catch (error) {
-  //     this.setState({ error: error.message });
-  //   }
-  // };
-
   const onHandleSubmit = value => {
       setQuery(value);
       setImages([]);
@@ -80,11 +60,13 @@ import { Modal } from './Modal/Modal';
     setIsOpenModal(false);
      setModalImg('');
   };
-  
-    // const { images, totalResults, isOpenModal, modalImg } = this.state;
+
     return (
       <StyledApp>
         <Searchbar onFormSubmit={onHandleSubmit} />
+        {error && (
+          <Alert textAlign="center">Sorry. There are some error {error} ... 😭</Alert>
+        )}
         <ImageGallery images={images} onToggleModal={onToggleModal} />
         {images.length < totalResults && (
           <Button onClick={onLoadMoreClick}>Load more</Button>
