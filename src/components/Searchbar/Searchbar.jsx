@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
 import {
   StyledHeader,
@@ -7,27 +7,22 @@ import {
   StyledStyledSearchFormInput,
 } from './Searchbar.styled.jsx';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
+export function Searchbar ({onFormSubmit}) {
+ const [query, setQuery] = useState('')
+
+  const onInputChange = (evt) => {
+    setQuery(evt.target.value);
   };
 
-  onInputChange = (evt) => {
-    this.setState({query: evt.target.value})
-
-
-  };
-
-  onHandleSubmit = (evt) =>{
+  const onHandleSubmit = (evt) =>{
     evt.preventDefault();
-    this.props.onFormSubmit(this.state.query)
-    this.setState({query: ''})
+    onFormSubmit(query);
+    setQuery('');
   }
-  render() {
-  
-    return (
+
+  return (
       <StyledHeader>
-        <StyledSearchForm onSubmit={this.onHandleSubmit}>
+        <StyledSearchForm onSubmit={onHandleSubmit}>
           <StyledStyledSearchFormBtn type="submit">
             <span>Search</span>
           </StyledStyledSearchFormBtn>
@@ -37,11 +32,10 @@ export class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            value={this.state.query}
-            onChange={this.onInputChange}
+            value={query}
+            onChange={onInputChange}
           />
         </StyledSearchForm>
       </StyledHeader>
     );
-  }
 }

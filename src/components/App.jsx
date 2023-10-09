@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 
 import { StyledApp } from './App.styled';
 import {Blocks} from 'react-loader-spinner'
@@ -8,73 +8,91 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    images: [],
-    totalResults: 0,
-    query: '',
-    page: 1,
-    isLoading: false,
-    error: null,
-    isOpenModal: false,
-    modalImg: '',
+ export function App () {
+  
+    const [images, setImages] = useState([]);
+    const [totalResults, setTotalResults] = useState(0);
+    const [query, setQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [isOpenModal, setIsOpenModal] = useState(false);
+    const [modalImg, setModalImg] = useState('');
+
+    useEffect(()=> {
+      if(!query) {
+          return
+          }
+          const fetchAllImages = async () => {
+            try {
+              const { hits, totalHits } = await getImages(query, page);
+              
+                setImages(prevImages => [...prevImages, ...hits]);
+                setTotalResults(totalHits);              
+            } catch (error) {
+              setError(error);
+            }
+          };
+
+          fetchAllImages();
+    },[query, page])
+  
+
+  // componentDidUpdate(prevProps, prevState) {
+  //   const { query, page } = this.state;
+  //   if (prevState.query !== query || prevState.page !== page) {
+  //     this.fetchAllImages();
+  //   }
+  // }
+
+  // fetchAllImages = async () => {
+  //   const { query, page } = this.state;
+  //   try {
+  //     const { hits, totalHits } = await getImages(query, page);
+  //     this.setState(prevState => ({
+  //       images: [...prevState.images, ...hits],
+  //       totalResults: totalHits,
+  //     }));
+  //   } catch (error) {
+  //     this.setState({ error: error.message });
+  //   }
+  // };
+
+  const onHandleSubmit = value => {
+      setQuery(value);
+      setImages([]);
+      setTotalResults(0);
+      setPage(1);
+      setIsLoading(false);
+      setError(null);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      this.fetchAllImages();
-    }
-  }
-
-  fetchAllImages = async () => {
-    const { query, page } = this.state;
-    try {
-      const { hits, totalHits } = await getImages(query, page);
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        totalResults: totalHits,
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-    }
+  const onLoadMoreClick = () => {
+   setPage (page + 1);
   };
 
-  onHandleSubmit = value => {
-    this.setState({
-      query: value,
-      images: [],
-      totalResults: 0,
-      page: 1,
-      isLoading: false,
-      error: null,
-    });
+  const onToggleModal = largeImage => {
+    setIsOpenModal(true);
+     setModalImg(largeImage);
   };
 
-  onLoadMoreClick = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const onCloseModal = () => {
+    setIsOpenModal(false);
+     setModalImg('');
   };
-
-  onToggleModal = largeImage => {
-    this.setState({ isOpenModal: true, modalImg: largeImage });
-  };
-
-  onCloseModal = () => {
-    this.setState({ isOpenModal: false, modalImg: '' });
-  };
-  render() {
-    const { images, totalResults, isOpenModal, modalImg } = this.state;
+  
+    // const { images, totalResults, isOpenModal, modalImg } = this.state;
     return (
       <StyledApp>
-        <Searchbar onFormSubmit={this.onHandleSubmit} />
-        <ImageGallery images={images} onToggleModal={this.onToggleModal} />
+        <Searchbar onFormSubmit={onHandleSubmit} />
+        <ImageGallery images={images} onToggleModal={onToggleModal} />
         {images.length < totalResults && (
-          <Button onClick={this.onLoadMoreClick}>Load more</Button>
+          <Button onClick={onLoadMoreClick}>Load more</Button>
         )}
         {isOpenModal && (
-          <Modal modalImg={modalImg} onCloseModal={this.onCloseModal} />
+          <Modal modalImg={modalImg} onCloseModal={onCloseModal} />
         )}
-        {this.state.isLoading && (
+        {isLoading && (
           <div>
             <Blocks
               visible={true}
@@ -88,5 +106,4 @@ export class App extends Component {
         )}
       </StyledApp>
     );
-  }
 }
